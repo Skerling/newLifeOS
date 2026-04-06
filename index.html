@@ -986,6 +986,9 @@ body{
     <button class="side-bottom-btn" id="dropbox-disconnect-btn" onclick="dropboxDisconnect()" style="display:none">
       ✕ Disconnect Dropbox
     </button>
+    <button class="side-bottom-btn" id="dropbox-reset-btn" onclick="dropboxReset()">
+      ↺ Reset Dropbox connection
+    </button>
     <button class="side-bottom-btn" onclick="openImportModal()">
       ↑ Restore from export
     </button>
@@ -2514,6 +2517,18 @@ async function dropboxAppendThought(text){
     const newLine = '[' + ts + '] ' + text + '\n';
     return await dropboxWriteInbox(existing + newLine);
   } catch(e){ console.error('Dropbox append failed', e); return false; }
+}
+
+// Reset — clears token and forces fresh OAuth
+function dropboxReset(){
+  localStorage.removeItem('dropbox_token');
+  dropboxToken = null;
+  dropboxUpdateUI(false);
+  const status = document.getElementById('file-status');
+  if(status){ status.style.display='none'; status.textContent=''; }
+  updateFileStatus('');
+  // small delay then reconnect
+  setTimeout(()=>dropboxConnect(), 300);
 }
 
 // Disconnect Dropbox
