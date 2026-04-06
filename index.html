@@ -2618,15 +2618,11 @@ renderQuote();
 updateTimerDisplay(timerMins*60);
 purgeSandbox();
 
-// handle Dropbox OAuth redirect first
-dropboxHandleRedirect();
-
 if(state.sessions.length){activeSessionId=state.sessions[0].id}
 else{newSession()}
 
 renderAll();
 renderCompactRecent();
-restoreFileHandle();
 renderOneModule();
 
 if(location.protocol==='file:'){
@@ -2640,6 +2636,15 @@ if(window.matchMedia('(display-mode: standalone)').matches){
 
 setTimeout(()=>document.getElementById('capture-input').focus(),100);
 document.getElementById('capture-input').addEventListener('blur',()=>setTimeout(hideTagAutocomplete,150));
+
+// ── DROPBOX INIT — runs last to ensure DOM is ready ──
+// handle OAuth redirect if coming back from Dropbox login
+if(window.location.hash.includes('access_token')){
+  dropboxHandleRedirect();
+} else {
+  // restore existing token if already connected
+  restoreFileHandle();
+}
 </script>
 </body>
 </html>
