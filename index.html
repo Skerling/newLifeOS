@@ -541,17 +541,17 @@ body{
 
 /* collapsed states */
 .app.side-collapsed{grid-template-columns:0px 1fr 300px}
-.app.side-collapsed .side{overflow:hidden;min-width:0}
-.app.side-collapsed .side > *{display:none}
+.app.side-collapsed .side{overflow:hidden;min-width:0;width:0}
 
 .app.panel-collapsed{grid-template-columns:220px 1fr 0px}
-.app.panel-collapsed .panel{overflow:hidden;min-width:0}
-.app.panel-collapsed .panel > *{display:none}
+.app.panel-collapsed .panel{overflow:hidden;min-width:0;width:0}
 
 .app.side-collapsed.panel-collapsed{grid-template-columns:0px 1fr 0px}
 
 /* smooth transitions */
 .app{transition:grid-template-columns 0.25s ease}
+.side{transition:width 0.25s ease}
+.panel{transition:width 0.25s ease}
 
 /* ── RIGHT PANEL ── */
 .panel{
@@ -2519,16 +2519,16 @@ async function dropboxAppendThought(text){
   } catch(e){ console.error('Dropbox append failed', e); return false; }
 }
 
-// Reset — clears token and forces fresh OAuth
+// Reset — clears token, stops there, user clicks Connect manually
 function dropboxReset(){
   localStorage.removeItem('dropbox_token');
   dropboxToken = null;
   dropboxUpdateUI(false);
   const status = document.getElementById('file-status');
   if(status){ status.style.display='none'; status.textContent=''; }
-  updateFileStatus('');
-  // small delay then reconnect
-  setTimeout(()=>dropboxConnect(), 300);
+  // clean URL if token is in hash
+  if(window.location.hash) window.history.replaceState({}, document.title, window.location.pathname);
+  alert('Dropbox disconnected. Click "Connect Dropbox" to reconnect.');
 }
 
 // Disconnect Dropbox
