@@ -2392,7 +2392,9 @@ function renderCompactRecent(){
 
 // ── DROPBOX API ───────────────────────────────────────────────────────────
 const DROPBOX_APP_KEY = '7ffmmdnzo97676s';
-const DROPBOX_REDIRECT = 'https://skerling.github.io/newLifeOS/';
+const DROPBOX_REDIRECT = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+  ? location.origin + location.pathname
+  : 'https://skerling.github.io/newLifeOS/';
 const DROPBOX_INBOX_PATH = '/inbox.txt';
 
 let dropboxToken = localStorage.getItem('dropbox_token') || null;
@@ -2411,23 +2413,30 @@ function dropboxConnect(){
 // Step 2 — on page load, check if Dropbox redirected back with a token
 function dropboxHandleRedirect(){
   const hash = window.location.hash;
-  if(!hash || !hash.includes('access_token')) return;
+  console.log('[Dropbox] hash:', hash ? hash.substring(0,50)+'...' : 'EMPTY');
+  if(!hash || !hash.includes('access_token')) {
+    console.log('[Dropbox] no token in URL');
+    return;
+  }
   try{
     const params = new URLSearchParams(hash.replace('#',''));
     const token = params.get('access_token');
+    console.log('[Dropbox] token found:', token ? 'YES ('+token.substring(0,10)+'...)' : 'NO');
     if(!token) return;
     dropboxToken = token;
     localStorage.setItem('dropbox_token', token);
+    console.log('[Dropbox] token saved to localStorage');
     // clean up URL so token not visible
     window.history.replaceState({}, document.title, window.location.pathname);
     dropboxUpdateUI(true);
     dropboxLoadInbox();
-  } catch(e){ console.error('Redirect parse failed', e); }
+  } catch(e){ console.error('[Dropbox] Redirect parse failed', e); }
 }
 
 // Step 3 — read inbox.txt from Dropbox
 async function dropboxLoadInbox(){
-  if(!dropboxToken) return;
+  if(!dropboxToken){ console.log('[Dropbox] no token, skipping load'); return; }
+  console.log('[Dropbox] loading inbox...');
   try{
     updateFileStatus('Loading from Dropbox…');
     const res = await fetch('https://content.dropboxapi.com/2/files/download', {
